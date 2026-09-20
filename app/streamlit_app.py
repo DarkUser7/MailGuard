@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """MailGuard AI — Modern AI-Powered Email Spam & Security Dashboard."""
 
 import os
@@ -322,77 +323,6 @@ with st.sidebar:
         ("About", "ℹ️")
     ]
 
-    # ── BIG TIME WATCH (Top of Sidebar) ──
-    st.markdown("""
-    <div class="watch-container">
-        <div style="font-size:0.70rem; font-weight:800; color:#60a5fa; letter-spacing:0.12em; margin-bottom:10px;">⏰ LIVE TIME</div>
-        <div class="analog-clock" id="analogClock">
-            <div class="center-dot"></div>
-            <div class="hand hour-hand" id="hourHand"></div>
-            <div class="hand minute-hand" id="minuteHand"></div>
-            <div class="hand second-hand" id="secondHand"></div>
-            <!-- 12 ticks -->
-            <div class="tick major" style="transform: translateX(-50%) rotate(0deg);"></div>
-            <div class="tick" style="transform: translateX(-50%) rotate(30deg);"></div>
-            <div class="tick" style="transform: translateX(-50%) rotate(60deg);"></div>
-            <div class="tick major" style="transform: translateX(-50%) rotate(90deg);"></div>
-            <div class="tick" style="transform: translateX(-50%) rotate(120deg);"></div>
-            <div class="tick" style="transform: translateX(-50%) rotate(150deg);"></div>
-            <div class="tick major" style="transform: translateX(-50%) rotate(180deg);"></div>
-            <div class="tick" style="transform: translateX(-50%) rotate(210deg);"></div>
-            <div class="tick" style="transform: translateX(-50%) rotate(240deg);"></div>
-            <div class="tick major" style="transform: translateX(-50%) rotate(270deg);"></div>
-            <div class="tick" style="transform: translateX(-50%) rotate(300deg);"></div>
-            <div class="tick" style="transform: translateX(-50%) rotate(330deg);"></div>
-            <div class="num" style="top:14px; left:50%;">12</div>
-            <div class="num" style="top:50%; right:14px;">3</div>
-            <div class="num" style="bottom:14px; left:50%;">6</div>
-            <div class="num" style="top:50%; left:14px;">9</div>
-        </div>
-        <div style="display:flex; align-items:center; justify-content:center; gap:4px;">
-            <div class="digital-time" id="digitalTime">--:--:--</div>
-            <span class="digital-ampm" id="digitalAmPm">--</span>
-        </div>
-        <div class="digital-date" id="digitalDate">Loading...</div>
-        <div class="digital-day" id="digitalDay">---</div>
-        <div class="watch-glow"></div>
-    </div>
-    <script>
-    (function() {
-        function updateWatch() {
-            const now = new Date();
-            let h = now.getHours();
-            const m = now.getMinutes();
-            const s = now.getSeconds();
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            const h12 = h % 12 || 12;
-            const hh = String(h12).padStart(2,'0');
-            const mm = String(m).padStart(2,'0');
-            const ss = String(s).padStart(2,'0');
-            const dt = document.getElementById('digitalTime');
-            const ap = document.getElementById('digitalAmPm');
-            const dd = document.getElementById('digitalDate');
-            const dy = document.getElementById('digitalDay');
-            if (dt) dt.textContent = hh + ':' + mm + ':' + ss;
-            if (ap) ap.textContent = ampm;
-            if (dd) dd.textContent = now.toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
-            if (dy) dy.textContent = now.toLocaleDateString('en-IN', { weekday:'long' });
-            const hourDeg = (h % 12) * 30 + m * 0.5;
-            const minDeg = m * 6 + s * 0.1;
-            const secDeg = s * 6;
-            const hhEl = document.getElementById('hourHand');
-            const mmEl = document.getElementById('minuteHand');
-            const ssEl = document.getElementById('secondHand');
-            if (hhEl) hhEl.style.transform = 'translateX(-50%) rotate(' + hourDeg + 'deg)';
-            if (mmEl) mmEl.style.transform = 'translateX(-50%) rotate(' + minDeg + 'deg)';
-            if (ssEl) ssEl.style.transform = 'translateX(-50%) rotate(' + secDeg + 'deg)';
-        }
-        updateWatch();
-        setInterval(updateWatch, 1000);
-    })();
-    </script>
-    """, unsafe_allow_html=True)
-
     for label, icon in menu_options:
         is_active = (st.session_state.current_page == label)
         btn_type = "primary" if is_active else "secondary"
@@ -709,13 +639,14 @@ if st.session_state.current_page == "Home":
         _val = _m.get('val_size', 0)
         _test = _m.get('test_size', 0)
         _acc = _m.get('test_accuracy', _m.get('accuracy', telemetry.get('model_accuracy', 0)))
-        _cv = _m.get('cv_mean', 0)
+        _val_acc = _m.get('val_accuracy', _m.get('cv_mean', 0))
         _ds_name = os.path.basename(_m.get('dataset_path','')) if _m.get('dataset_path') else telemetry.get('dataset_name','')
         t_total = f"{_total:,}" if _total else "N/A"
         t_train = f"{_train:,}" if _train else "N/A"
         t_acc = f"{_acc:.2%}" if _acc else "Untrained"
-        t_cv = f"{_cv:.2%}" if _cv else "N/A"
+        t_val = f"{_val_acc:.2%}" if _val_acc else "N/A"
         t_split = _m.get('split_ratio', '80/10/10') if _m else "N/A"
+        val_label = "Val Accuracy" if _m.get('val_accuracy') else "CV Mean (5-fold)"
 
         # Show dataset badge
         if _ds_name:
@@ -768,8 +699,8 @@ if st.session_state.current_page == "Home":
                 <div class="stat-left">
                     <div class="stat-icon-wrapper" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">🧪</div>
                     <div>
-                        <div class="stat-val">{t_cv}</div>
-                        <div class="stat-label">CV Mean (5-fold)</div>
+                        <div class="stat-val">{t_val}</div>
+                        <div class="stat-label">{val_label}</div>
                     </div>
                 </div>
                 <div class="stat-trend" style="color: #22d3ee;">◆</div>
@@ -845,37 +776,6 @@ if st.session_state.current_page == "Home":
             <div class="feature-arrow">➔</div>
         </div>
         """, unsafe_allow_html=True)
-
-
-    # ── All Datasets Overview (sabhi datasets ka table) ──
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("### 🗄️ All Available Datasets (Frontend Auto-Updated)")
-    st.caption("Ye table `data/processed` + `data/raw` me maujood sabhi CSV datasets ko auto-detect karke dikhata hai. 10 lakh training ke baad yahan 1M dataset bhi appear hoga. Metrics hamesha `models/metrics.json` se live aate hain.")
-    _all_ds = telemetry.get('available_datasets', [])
-    if _all_ds:
-        _df_all = pd.DataFrame([{
-            "Dataset": d['name'],
-            "Rows": f"{d['rows']:,}",
-            "Ham": f"{d['ham']:,}",
-            "Spam": f"{d['spam']:,}",
-            "Size (MB)": d['size_mb'],
-            "Path": d['path'].replace("\\","/"),
-            "Active ✓" : "✅" if d['path'] == _active_dataset_path else ""
-        } for d in _all_ds])
-        st.dataframe(_df_all, use_container_width=True, hide_index=True)
-        # Quick compare bar
-        _cmp = pd.DataFrame([{"Dataset": d['name'], "Rows": d['rows']} for d in _all_ds])
-        fig_cmp = px.bar(_cmp, x="Dataset", y="Rows", color="Dataset", color_discrete_sequence=px.colors.qualitative.Set2, text_auto=True)
-        fig_cmp.update_layout(paper_bgcolor="#0d1527", plot_bgcolor="#0d1527", font_color="#e2e8f0", showlegend=False, margin=dict(l=10,r=10,t=10,b=10), height=280)
-        st.plotly_chart(fig_cmp, use_container_width=True)
-        st.caption(f"Model trained on: `{telemetry.get('metrics',{}).get('dataset_path','N/A')}` • Accuracy: {telemetry['model_accuracy']:.2%}" if telemetry['model_accuracy'] else "Model abhi 50k pe trained hai — 10 lakh pe train karne ke baad accuracy yahan auto-update ho jayegi.")
-    else:
-        st.info("Koi dataset nahi mila. `python scripts/download_1M.py` chalayein.")
-
-    # Dataset-specific live preview for selected dataset
-    if not telemetry['df'].empty:
-        with st.expander(f"🔍 Active Dataset Preview — {telemetry['dataset_name']} (first 3 rows)", expanded=False):
-            st.dataframe(telemetry['df'][['label','text']].head(3), use_container_width=True)
 
 
 # ==============================================================================
@@ -1004,24 +904,7 @@ elif st.session_state.current_page == "ML Insights":
                 st.plotly_chart(fig_w, use_container_width=True)
         else: st.info("Dataset not loaded.")
 
-    # ── All Datasets comparison in ML Insights too ──
-    st.markdown("### 🗄️ All Datasets Comparison (Sabhi Datasets)")
-    _all_ds2 = telemetry.get('available_datasets', [])
-    if _all_ds2:
-        _df_all2 = pd.DataFrame([{
-            "Dataset": d['name'],
-            "Rows": f"{d['rows']:,}",
-            "Ham": f"{d['ham']:,}",
-            "Spam": f"{d['spam']:,}",
-            "Size MB": d['size_mb'],
-            "Active": "✅" if d['path']==_active_dataset_path else ""
-        } for d in _all_ds2])
-        st.dataframe(_df_all2, use_container_width=True, hide_index=True)
-        _cmp2 = pd.DataFrame([{"Dataset": d['name'], "Rows": d['rows']} for d in _all_ds2])
-        fig_cmp2 = px.bar(_cmp2, x="Dataset", y="Rows", color="Dataset", text_auto=True)
-        fig_cmp2.update_layout(paper_bgcolor="#0d1527", plot_bgcolor="#0d1527", font_color="#e2e8f0", showlegend=False, height=300)
-        st.plotly_chart(fig_cmp2, use_container_width=True)
-    st.caption("Active dataset auto-selected from `models/metrics.json` (latest training). Model metrics hamesha `models/metrics.json` se live aate hain — Quick Stats bhi recent train data dikhata hai.")
+
 
     # Samples preview
     df2 = telemetry['df']
@@ -1080,28 +963,28 @@ elif st.session_state.current_page == "About":
     ### 🏗️ Technical Architecture
     ```text
     USER EMAIL (+ Optional RFC Headers)
-                    │
-                    ▼
+                    |
+                    v
            Streamlit Dashboard
-                    │
-        ┌───────────┴───────────────────────┐
-        ▼                                   ▼
+                    |
+        +-----------+-----------------------+
+        v                                   v
     ML CLASSIFIER                   SECURITY ANALYZERS
-    (TF-IDF / Hashing               • URL Extractor
-     + Logistic / SGD)              • VirusTotal API v3 Threat Intel
-     [READ-ONLY / UNTOUCHED]        • Keyword & Pattern Analyzers
-        │                           • SPF / DKIM / DMARC Forensics
-        │                                   │
-        └─────────────────┬─────────────────┘
-                          ▼
+    (TF-IDF / Hashing               * URL Extractor
+     + Logistic / SGD)              * VirusTotal API v3 Threat Intel
+     [READ-ONLY / UNTOUCHED]        * Keyword & Pattern Analyzers
+        |                           * SPF / DKIM / DMARC Forensics
+        |                                   |
+        +-----------------+-----------------+
+                          v
                  Risk Scoring Engine
                   (0 - 100 Points)
-                          │
-                          ▼
+                          |
+                          v
                   Google Gemini AI
             (Explainable Security Report)
-                          │
-                          ▼
+                          |
+                          v
             Interactive UI + PDF Export
     ```
 
@@ -1118,12 +1001,12 @@ elif st.session_state.current_page == "About":
 # ==============================================================================
 st.markdown("""
 <div class="footer-container">
-    <div>© 2025 MailGuard AI. Built with ❤️ using Streamlit.</div>
+    <div>&copy; 2025 MailGuard AI. Built with <span style="color:#ef4444;">&#9829;</span> using Streamlit.</div>
     <div style="display: flex; gap: 16px;">
         <span style="cursor: pointer;">Privacy</span>
-        <span>•</span>
+        <span>&bull;</span>
         <span style="cursor: pointer;">Terms</span>
-        <span>•</span>
+        <span>&bull;</span>
         <span style="cursor: pointer;">Contact</span>
     </div>
 </div>

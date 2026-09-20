@@ -120,35 +120,3 @@ if not df.empty:
     fig.update_layout(paper_bgcolor="#0d1527", font_color="#e2e8f0")
     st.plotly_chart(fig, use_container_width=True)
 
-# ── All Datasets Overview (same as Home) ──
-st.markdown("### 🗄️ All Available Datasets (Frontend Auto-Updated)")
-import glob as _glob
-_all = []
-for _d in [_os.path.join(_os.path.dirname(__file__), "..", "..", "data", "processed"), _os.path.join(_os.path.dirname(__file__), "..", "..", "data", "raw")]:
-    if _os.path.exists(_d):
-        for _fp in _glob.glob(_os.path.join(_d, "*.csv")):
-            try:
-                _lab = _pd.read_csv(_fp, usecols=['label'])
-                _n = len(_lab)
-                _spam = int((_lab['label'].astype(str).str.lower()=='spam').sum())
-                _ham = int((_lab['label'].astype(str).str.lower()=='ham').sum())
-                _sz = round(_os.path.getsize(_fp)/(1024*1024),1)
-                _all.append({"Dataset": _os.path.basename(_fp), "Rows": f"{_n:,}", "_rows": _n, "Ham": f"{_ham:,}", "Spam": f"{_spam:,}", "Size MB": _sz, "Path": _fp.replace("\\","/")})
-            except: pass
-_all = sorted(_all, key=lambda x: x["_rows"], reverse=True)
-if _all:
-    st.dataframe(_pd.DataFrame([{k:v for k,v in d.items() if k!="_rows"} for d in _all]), use_container_width=True, hide_index=True)
-    _cmp = _pd.DataFrame([{"Dataset": d["Dataset"], "Rows": d["_rows"]} for d in _all])
-    fig_cmp = px.bar(_cmp, x="Dataset", y="Rows", color="Dataset", text_auto=True)
-    fig_cmp.update_layout(paper_bgcolor="#0d1527", plot_bgcolor="#0d1527", font_color="#e2e8f0", showlegend=False, height=300)
-    st.plotly_chart(fig_cmp, use_container_width=True)
-    st.caption("Select active dataset via Home sidebar selector. Model metrics from `models/metrics.json` auto-update after 1M training.")
-    # dataset selector for this page too
-    _labels = [d["Dataset"] + f" ({d['Rows']})" for d in _all]
-    _sel = st.selectbox("📂 Active Dataset Preview", _labels, index=0)
-    _idx = _labels.index(_sel)
-    _chosen = _all[_idx]["Path"]
-    try:
-        _pdf = _pd.read_csv(_chosen)
-        st.dataframe(_pdf[['label','text']].head(5), use_container_width=True)
-    except: pass
