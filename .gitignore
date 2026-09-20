@@ -1,0 +1,53 @@
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+.venv/
+venv/
+ENV/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Testing & Cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Models (large binary files)
+models/*.pkl
+models/*.joblib
+
+# Data files (large datasets)
+data/processed/
+data/raw/*.csv
+data/data/
+*.csv
+
+# Generated reports & outputs
+reports/generated/
+*.pdf
+
+# Streamlit & UI
+.streamlit/
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
